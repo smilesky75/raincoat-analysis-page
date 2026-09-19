@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>極鋒雨衣分析</title>
+<style>
+  :root{
+    --bg:#12151A;
+    --surface:#1A1F26;
+    --surface-soft:#232A32;
+    --ink:#ECF2F5;
+    --ink-soft:#8B96A3;
+    --rule:#2C333B;
+    --accent:#D8FA5C;
+    --accent-ink:#BFE066;
+    --accent-soft:#232B14;
+    --charcoal:#F5F8FA;
+    --positive:#7EE0A0;
+    --positive-bg:#152A1E;
+    --negative:#FF8F72;
+    --negative-bg:#2C1815;
+    --gap-accent:#F2B84C;
+    --gap-bg:#2B2312;
+    --tag-bg:#20262D;
+    --infer-border:#454E57;
+  }
+  /* deliberately single-theme: a night, wet-asphalt reading of the product,
+     not a light/dark toggle — background and every color below are explicit */
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
+    line-height:1.7;
+    margin:0;
+  }
+  img{max-width:100%;}
+  h1,h2,h3{
+    font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
+    font-weight:800;
+    color:var(--charcoal);
+    text-wrap:balance;
+    margin:0;
+  }
+  .num{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;}
+
+  .page{max-width:840px;margin:0 auto;padding:0 20px 64px;}
+
+  /* masthead */
+  .masthead{
+    position:relative;
+    padding:40px 24px 32px;
+    margin:0 -20px 28px;
+    background:
+      repeating-linear-gradient(115deg, color-mix(in srgb, var(--accent) 16%, transparent) 0 2px, transparent 2px 26px),
+      radial-gradient(120% 60% at 15% -10%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 60%),
+      linear-gradient(180deg, var(--surface), var(--bg) 85%);
+    border-bottom:1px solid var(--rule);
+    overflow:hidden;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:"Roboto Mono",monospace;font-size:12px;letter-spacing:.08em;
+    color:var(--accent-ink);background:var(--surface);
+    border:1px solid var(--rule);border-radius:100px;
+    padding:4px 12px;margin-bottom:16px;
+  }
+  .masthead h1{font-size:clamp(26px,6vw,38px);font-weight:700;line-height:1.3;}
+  .masthead .brand{font-size:14px;color:var(--ink-soft);margin-top:6px;}
+  .lead{
+    margin-top:18px;font-size:17px;line-height:1.8;
+    background:var(--surface);border:1px solid var(--rule);
+    border-radius:10px;padding:16px 18px;
+  }
+  .price-strip{
+    display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;
+  }
+  .price-chip{
+    background:var(--surface);border:1px solid var(--rule);border-radius:10px;
+    padding:10px 14px;min-width:120px;flex:1 1 140px;
+  }
+  .price-chip .k{font-size:12px;color:var(--ink-soft);}
+  .price-chip .v{font-family:"Roboto Mono",monospace;font-size:19px;font-weight:700;color:var(--accent);}
+
+  .hero-photo{
+    width:100%;max-width:100%;height:auto;
+    border-radius:12px;border:1px solid var(--rule);
+    display:block;margin-top:20px;
+    background:var(--surface-soft);
+  }
+  figure{margin:0;}
+  figcaption{font-size:12px;color:var(--ink-soft);margin-top:6px;font-family:"Roboto Mono",monospace;}
+
+  /* toc */
+  .toc{
+    display:flex;flex-wrap:wrap;gap:8px;margin:0 0 40px;
+    padding:14px;border:1px dashed var(--rule);border-radius:10px;background:var(--surface);
+  }
+  .toc a{
+    font-size:13px;color:var(--ink-soft);text-decoration:none;
+    padding:4px 10px;border-radius:100px;border:1px solid var(--rule);
+    font-family:"Roboto Mono",monospace;
+  }
+  .toc a:hover{color:var(--accent-ink);border-color:var(--accent);}
+
+  /* sections */
+  .section{margin:0 0 48px;scroll-margin-top:16px;}
+  .section-head{
+    display:flex;align-items:baseline;gap:12px;margin-bottom:16px;
+    padding-bottom:10px;border-bottom:2px solid var(--accent);
+  }
+  .section-head .idx{
+    font-family:"Roboto Mono",monospace;font-size:14px;font-weight:700;color:var(--accent);
+    flex:0 0 auto;
+  }
+  .section-head h2{font-size:22px;}
+  .section > p{margin:0 0 14px;}
+  .note{
+    font-size:13.5px;color:var(--ink-soft);
+    border-left:3px solid var(--rule);padding-left:12px;margin:14px 0;
+  }
+
+  .src{
+    display:inline-block;font-family:"Roboto Mono",monospace;font-size:11.5px;
+    color:var(--ink-soft);background:var(--tag-bg);border-radius:6px;
+    padding:2px 8px;margin:2px 4px 2px 0;
+  }
+
+  /* rain divider */
+  .rain-divider{width:100%;height:22px;margin:0 0 40px;opacity:.6;}
+
+  /* tables */
+  .table-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--surface);}
+  table{border-collapse:collapse;width:100%;min-width:480px;font-size:14.5px;}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top;}
+  thead th{
+    font-family:"Roboto Mono",monospace;font-size:12px;letter-spacing:.04em;
+    color:var(--ink-soft);background:var(--surface-soft);
+    text-transform:uppercase;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  td.num,th.num{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;}
+
+  /* selling points */
+  .points-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .point-card{
+    background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px;
+  }
+  .point-card h3{font-size:15px;margin-bottom:10px;color:var(--accent-ink);}
+  .point-card ul{margin:0;padding-left:18px;}
+  .point-card li{margin-bottom:6px;font-size:14px;}
+
+  /* stock */
+  .stock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:14px;}
+  .stock-card{
+    background:var(--surface);border:1px solid var(--rule);border-radius:10px;
+    padding:14px;text-align:center;
+  }
+  .stock-card .size{font-size:13px;color:var(--ink-soft);}
+  .stock-card .n{font-family:"Roboto Mono",monospace;font-size:26px;color:var(--accent);font-weight:700;}
+  .stock-card .unit{font-size:12px;color:var(--ink-soft);}
+
+  /* audience */
+  .kind-tag{
+    display:inline-block;font-size:11.5px;font-family:"Roboto Mono",monospace;
+    border-radius:6px;padding:2px 8px;margin-bottom:10px;
+  }
+  .kind-tag.data{background:var(--accent-soft);color:var(--accent-ink);}
+  .kind-tag.infer{border:1px dashed var(--infer-border);color:var(--ink-soft);}
+  .infer-row{
+    display:flex;justify-content:space-between;gap:14px;
+    padding:10px 0;border-bottom:1px solid var(--rule);font-size:14.5px;
+  }
+  .infer-row:last-child{border-bottom:none;}
+  .infer-row .who{color:var(--ink-soft);flex:0 0 42%;}
+  .infer-row .design{font-weight:500;}
+
+  /* reviews */
+  .review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .quote{
+    border-radius:10px;padding:16px 18px;font-size:14.5px;position:relative;
+  }
+  .quote.positive{background:var(--positive-bg);border:1px solid color-mix(in srgb, var(--positive) 35%, transparent);}
+  .quote.negative{background:var(--negative-bg);border:1px solid color-mix(in srgb, var(--negative) 35%, transparent);}
+  .quote .label{
+    font-family:"Roboto Mono",monospace;font-size:11.5px;letter-spacing:.05em;
+    display:block;margin-bottom:8px;
+  }
+  .quote.positive .label{color:var(--positive);}
+  .quote.negative .label{color:var(--negative);}
+  .quote ul{margin:0;padding-left:18px;}
+  .quote li{margin-bottom:6px;}
+
+  /* gaps */
+  .gap-card{
+    background:var(--gap-bg);border-left:4px solid var(--gap-accent);border-radius:0 10px 10px 0;
+    padding:16px 18px;margin-bottom:14px;
+  }
+  .gap-card h3{font-size:15.5px;margin-bottom:6px;color:var(--charcoal);}
+  .gap-card .basis{
+    font-family:"Roboto Mono",monospace;font-size:12px;color:var(--gap-accent);
+    display:block;margin-bottom:8px;
+  }
+  .gap-card p{margin:0 0 8px;font-size:14.5px;}
+  .gap-card p:last-child{margin-bottom:0;}
+  .gap-card .suggest{font-weight:500;}
+
+  /* legal */
+  .legal-list{margin:0;padding-left:20px;}
+  .legal-list li{margin-bottom:10px;font-size:14.5px;}
+
+  /* appendix */
+  .appendix{
+    background:var(--surface-soft);border:1px dashed var(--rule);border-radius:10px;
+    padding:18px 20px;
+  }
+  .appendix h3{font-size:15px;margin:18px 0 8px;color:var(--ink-soft);}
+  .appendix h3:first-child{margin-top:0;}
+  .appendix ul{margin:0;padding-left:18px;}
+  .appendix li{margin-bottom:6px;font-size:14px;color:var(--ink-soft);}
+
+  .prompt-block{
+    background:var(--charcoal);color:var(--bg);
+    border-radius:10px;padding:18px;font-family:"Roboto Mono",monospace;
+    font-size:12.5px;line-height:1.8;overflow-x:auto;white-space:pre-wrap;
+  }
+
+  footer{
+    text-align:center;color:var(--ink-soft);font-size:12.5px;
+    padding-top:24px;border-top:1px solid var(--rule);font-family:"Roboto Mono",monospace;
+  }
+
+  @media (max-width:480px){
+    .masthead{padding:32px 18px 26px;}
+    .infer-row{flex-direction:column;gap:4px;}
+    .infer-row .who{flex:none;}
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <span class="eyebrow">商品分析頁　資料查詢日期　2026年9月12日</span>
+    <h1>C2C側開秒穿後背包極鋒雨衣．鈦粉拼黑</h1>
+    <div class="brand">CHECK2CHECK（建恆貿易有限公司）　新色限量預購　預計2026年9月30日起出貨</div>
+    <p class="lead">側開秒穿的機車雨衣，官網、快電商、momo三個通路實際售價一致為新台幣1,380元，比同型式競品貴三成到一倍。商品頁上找得到的差異化只有三個：杜邦鐵氟龍防水膜、三層防倒流結構、三種衣長。這頁把三通路比價、規格、受眾、競品與市場缺口拆開整理，每個數字都標來源與查詢日期。</p>
+    <div class="price-strip">
+      <div class="price-chip"><div class="k">三通路售價</div><div class="v num">NTD 1,380</div></div>
+      <div class="price-chip"><div class="k">防水係數（品牌宣稱）</div><div class="v num">10000mmH₂O</div></div>
+      <div class="price-chip"><div class="k">重量</div><div class="v num">約800公克</div></div>
+      <div class="price-chip"><div class="k">鈦粉拼黑現貨（預購）</div><div class="v num">411件</div></div>
+    </div>
+    <figure>
+      <img class="hero-photo" src="a5.jpg" alt="C2C側開秒穿後背包極鋒雨衣鈦粉拼黑商品照">
+      <figcaption>商品圖　來源：CHECK2CHECK官方CDN　2026年9月12日</figcaption>
+    </figure>
+  </header>
+
+  <nav class="toc" aria-label="段落索引">
+    <a href="#price">02 價格比較</a>
+    <a href="#spec">03 規格</a>
+    <a href="#points">04 賣點</a>
+    <a href="#stock">05 庫存</a>
+    <a href="#audience">06 受眾</a>
+    <a href="#competitor">07 競品</a>
+    <a href="#review">08 評價</a>
+    <a href="#gap">09 市場缺口</a>
+    <a href="#brand">10 品牌背景</a>
+    <a href="#legal">11 宣稱與法規</a>
+    <a href="#appendix">12 附錄</a>
+  </nav>
+
+  <!-- 02 價格與通路 -->
+  <section class="section" id="price">
+    <div class="section-head"><span class="idx num">02</span><h2>價格與通路</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>通路</th><th>標示原價</th><th>目前售價</th><th>備註</th></tr></thead>
+        <tbody>
+          <tr><td>CHECK2CHECK官網</td><td class="num">NTD 2,080</td><td class="num">NTD 1,380</td><td>全站滿699免運，另有任2件85折限時活動</td></tr>
+          <tr><td>快電商（夥伴店）</td><td class="num">NTD 1,580</td><td class="num">NTD 1,380</td><td>滿千免運，鈦粉拼黑需分開下單</td></tr>
+          <tr><td>momo購物網</td><td class="num">市售價2,080</td><td class="num">促銷價1,380</td><td>品號13287077，同頁賣同系列軍綠與鈦灰</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">三個通路的實際售價一致（1,380元），但原價標法不同：官網與momo標2,080元，快電商後台標1,580元。同一支商品在不同通路的折數看起來會差很多，這是很好的教學點。<span class="src">來源：快電商商品頁／check2check.com.tw／momoshop　2026年9月12日</span></p>
+    <p style="margin-top:18px;font-size:14.5px;"><strong>官網加購區</strong>（可視為連帶銷售的分析材料）：C2C秒穿防水雨鞋套加129元（原價199元）、防潑水極鋒雙肩包加1,280元（原價1,580元），另有冰絲四角褲、防曬噴霧、無縫內褲、針織背心四項小額加購。<span class="src">來源：check2check.com.tw　2026年9月12日</span></p>
+  </section>
+
+  <svg class="rain-divider" viewBox="0 0 800 22" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="0" y1="20" x2="18" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="40" y1="20" x2="58" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="80" y1="20" x2="98" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="120" y1="20" x2="138" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="160" y1="20" x2="178" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="200" y1="20" x2="218" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="240" y1="20" x2="258" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="280" y1="20" x2="298" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="320" y1="20" x2="338" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="360" y1="20" x2="378" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="400" y1="20" x2="418" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="440" y1="20" x2="458" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="480" y1="20" x2="498" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="520" y1="20" x2="538" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="560" y1="20" x2="578" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="600" y1="20" x2="618" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="640" y1="20" x2="658" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="680" y1="20" x2="698" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="720" y1="20" x2="738" y2="2" stroke="var(--accent)" stroke-width="2"/>
+    <line x1="760" y1="20" x2="778" y2="2" stroke="var(--accent)" stroke-width="2"/>
+  </svg>
+
+  <!-- 03 規格表 -->
+  <section class="section" id="spec">
+    <div class="section-head"><span class="idx num">03</span><h2>規格表</h2></div>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td>材質</td><td>超輕聚酯纖維</td></tr>
+          <tr><td>防水膜</td><td>超輕羽量級杜邦鐵氟龍防水膜</td></tr>
+          <tr><td>防水係數</td><td>品牌宣稱通過SGS耐水壓測試，10000mmH₂O（公開頁面未附報告編號與日期，見第12段）</td></tr>
+          <tr><td>重量</td><td class="num">約800公克，正負50公克</td></tr>
+          <tr><td>顏色</td><td>鈦粉拼黑（本次新色），同款另有軍綠拼黑、鈦灰拼黑</td></tr>
+          <tr><td>尺寸</td><td>一般型L、加長型XL、特加長型2XL</td></tr>
+          <tr><td>產地</td><td>越南製造，台灣監製</td></tr>
+          <tr><td>保固</td><td>僅針對商品本身，七天內新品瑕疵更換</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><span class="src">來源：快電商商品頁　2026年9月12日</span></p>
+    <figure style="margin-top:18px;">
+      <img class="hero-photo" src="a0p.jpg" alt="極鋒雨衣尺寸與配色對照圖">
+      <figcaption>商品圖　來源：CHECK2CHECK官方CDN　2026年9月12日</figcaption>
+    </figure>
+  </section>
+
+  <!-- 04 賣點拆三組 -->
+  <section class="section" id="points">
+    <div class="section-head"><span class="idx num">04</span><h2>賣點拆三組</h2></div>
+    <p>以下是官方賣點原文，依內容拆成三組整理，沒有新增素材包以外的賣點。</p>
+    <div class="points-grid">
+      <div class="point-card">
+        <h3>穿脫速度</h3>
+        <ul>
+          <li>CHECK2CHECK獨家訂製</li>
+          <li>獨特側穿式3秒快速穿脫</li>
+          <li>立體擴充設計，後背包也能穿</li>
+          <li>大容量收納口袋，側邊雙頭拉鍊，拿取物品極便利</li>
+        </ul>
+      </div>
+      <div class="point-card">
+        <h3>防水結構</h3>
+        <ul>
+          <li>通過SGS耐水壓測試，防水係數達業界高標10000mmH₂O</li>
+          <li>超輕羽量級杜邦鐵氟龍防水膜</li>
+          <li>三層防倒流設計：內層拉鍊、反摺收入覆蓋、魔鬼氈密合</li>
+          <li>防雨水滲入：口鼻擋水片設計、內裡加強雙層防水壓條</li>
+        </ul>
+      </div>
+      <div class="point-card">
+        <h3>騎士情境</h3>
+        <ul>
+          <li>可透視手錶孔設計，可調式雙層袖套</li>
+          <li>雨帽可收納，可調式帽圍</li>
+          <li>3M反光LOGO，提高夜間騎行安全</li>
+          <li>反摺專屬收納袋，輕巧便於收納</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px;"><span class="src">來源：快電商商品頁／官網商品描述　2026年9月12日</span></p>
+  </section>
+
+  <!-- 05 庫存與出貨狀況 -->
+  <section class="section" id="stock">
+    <div class="section-head"><span class="idx num">05</span><h2>庫存與出貨狀況</h2></div>
+    <p>鈦粉拼黑（預購中，2026年9月30日起出貨）</p>
+    <div class="stock-grid">
+      <div class="stock-card"><div class="size">一般型L</div><div class="n num">188</div><div class="unit">件</div></div>
+      <div class="stock-card"><div class="size">加長型XL</div><div class="n num">172</div><div class="unit">件</div></div>
+      <div class="stock-card"><div class="size">特加長型2XL</div><div class="n num">51</div><div class="unit">件</div></div>
+    </div>
+    <p>同款其他兩色：官網標示鈦灰拼黑售完，預計2027年1月補貨；軍綠拼黑售完，預計2027年4月補貨。<span class="src">來源：check2check.com.tw／快電商後台庫存資料　2026年9月12日</span></p>
+    <p class="note">兩個既有顏色都缺貨到明年，新色用預購方式先收單，缺貨期長達半年以上。缺貨本身就是文案素材，但也要提醒消費者實際出貨時間，見第09段缺口四。</p>
+  </section>
+
+  <!-- 06 受眾分析 -->
+  <section class="section" id="audience">
+    <div class="section-head"><span class="idx num">06</span><h2>受眾分析</h2></div>
+
+    <span class="kind-tag data">6-1　市場數字（二手引用）</span>
+    <div class="table-wrap" style="margin-bottom:14px;">
+      <table>
+        <thead><tr><th>數字</th><th>內容</th><th>來源</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1,466萬輛</td><td>全台機車掛牌數（2025年2月底）</td><td>交通部公路單位統計，經新聞報導引用</td></tr>
+          <tr><td class="num">每百人63輛</td><td>台灣平均機車持有密度</td><td>同上</td></tr>
+          <tr><td class="num">18.5萬人</td><td>外送平台從業人員（2022年底），2019年為4.5萬人，三年多三倍</td><td>勞動部職安署統計，經媒體引用</td></tr>
+          <tr><td class="num">女性占22%</td><td>外送員性別比（男性78%）</td><td>104人力銀行分析，媒體引用</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">以上四個數字是二手引用，媒體轉述官方統計，非一手查證。一手查法：交通部統計查詢網的機動車輛登記數可以查到縣市別數字。</p>
+
+    <span class="kind-tag infer" style="margin-top:8px;">6-2　從商品設計反推的使用者（推論）</span>
+    <div class="table-wrap" style="padding:4px 14px;">
+      <div class="infer-row"><span class="who">每天通勤、要背後背包的上班族與學生</span><span class="design">立體擴充設計，後背包也能穿</span></div>
+      <div class="infer-row"><span class="who">頻繁上下車穿脫者，如外送、業務、接送小孩</span><span class="design">側穿式3秒快速穿脫</span></div>
+      <div class="infer-row"><span class="who">雨天要看時間或導航的騎士</span><span class="design">可透視手錶孔</span></div>
+      <div class="infer-row"><span class="who">夜間騎乘</span><span class="design">3M反光LOGO</span></div>
+      <div class="infer-row"><span class="who">身高較高、傳統雨衣太短的人</span><span class="design">加長型與特加長型</span></div>
+    </div>
+    <p class="note">官方頁面沒有寫目標客群，以上是從設計倒推的，不是官方資料。</p>
+
+    <h3 style="font-size:15px;margin:18px 0 8px;color:var(--charcoal);">6-3　受眾的真實抱怨</h3>
+    <ul style="font-size:14.5px;padding-left:20px;margin:0 0 14px;">
+      <li>冬天穿多層衣服時，肩部雙側拉鍊會卡到喉嚨（Threads評論，給2.0版70分）</li>
+      <li>買雨衣最怕的是穿了還是濕，討論區分享重點都在領口、袖口、下襬會不會滲水</li>
+      <li>品牌自己的商品頁列了8條注意事項，其中三條在講怎麼避免進水（口袋別放太重、雨帽要戴好、擋水層保持平整）</li>
+    </ul>
+    <p class="note">這個品類的核心焦慮不是好不好看，是會不會濕、穿不穿得快。</p>
+
+    <h3 style="font-size:15px;margin:18px 0 8px;color:var(--ink-soft);">6-4　查不到的受眾資料</h3>
+    <ul style="font-size:14px;padding-left:20px;color:var(--ink-soft);margin:0;">
+      <li>搜尋趨勢與季節性：Google Trends當下被擋（回429），沒有拿到逐月數字。可自行到trends.google.com查「機車雨衣」台灣近12個月，看梅雨季與颱風季高峰。</li>
+      <li>這支商品的實際買家輪廓（年齡、性別、地區）：只有品牌後台有。</li>
+    </ul>
+  </section>
+
+  <!-- 07 競品分析 -->
+  <section class="section" id="competitor">
+    <div class="section-head"><span class="idx num">07</span><h2>競品價格帶與對手表</h2></div>
+
+    <p><strong>7-1　價格帶</strong>（一手，逐筆撈PChome公開搜尋結果，2026年9月12日）</p>
+    <div class="table-wrap" style="margin-bottom:14px;">
+      <table>
+        <thead><tr><th>搜尋詞</th><th class="num">商品總數</th><th class="num">最低</th><th class="num">中位數</th><th class="num">最高</th></tr></thead>
+        <tbody>
+          <tr><td>側開雨衣</td><td class="num">35筆</td><td class="num">655</td><td class="num">799</td><td class="num">1,080</td></tr>
+          <tr><td>機車雨衣</td><td class="num">208筆</td><td class="num">449</td><td class="num">659</td><td class="num">1,880</td></tr>
+          <tr><td>背包雨衣</td><td class="num">203筆</td><td class="num">139</td><td class="num">884</td><td class="num">1,500</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">最低、中位、最高取自各搜尋詞熱銷前20筆。本品賣1,380元，比側開雨衣整個價格帶的最高價還高28%，在PChome的側開款裡找不到同價位對手。</p>
+
+    <p style="margin-top:20px;"><strong>7-2　同型式的具體對手</strong>（一手，PChome售價）</p>
+    <div class="table-wrap" style="margin-bottom:14px;">
+      <table>
+        <thead><tr><th>品牌與款式</th><th class="num">售價</th><th>型式</th></tr></thead>
+        <tbody>
+          <tr><td>貝塔BETA專利雙側開口袋風雨衣（背包款、加大尺寸）</td><td class="num">655／749</td><td>一件式側開背包款</td></tr>
+          <tr><td>太空型雙側開雨衣</td><td class="num">660</td><td>一件式側開</td></tr>
+          <tr><td>俊挺　背包款雙側開多功能防水風雨衣（含雨褲、鞋套）</td><td class="num">764</td><td>套裝</td></tr>
+          <tr><td>背包風雨衣（雙側開加內斜開）</td><td class="num">770</td><td>一件式</td></tr>
+          <tr><td>秒穿世袋全能側開雨衣（贈收納袋）</td><td class="num">790</td><td>一件式</td></tr>
+          <tr><td>艾斯　雙側開背包款專利內斜拉風雨衣</td><td class="num">799</td><td>一件式</td></tr>
+          <tr><td>賽德、達克　雙側開背包款套裝風雨衣</td><td class="num">969／990</td><td>兩件式套裝</td></tr>
+          <tr><td>後背包專用側開雨衣YW-R331（三層防水、高係數反光條）</td><td class="num">988</td><td>一件式</td></tr>
+          <tr><td>CORVIX疾速秒穿側開雙拉鍊成人雨衣</td><td class="num">1,080</td><td>一件式</td></tr>
+          <tr style="background:var(--accent-soft);"><td><strong>CHECK2CHECK本品</strong></td><td class="num"><strong>1,380</strong></td><td>一件式側開背包款</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:20px;"><strong>7-3　內容網站推薦文裡的對照</strong>（二手，僅供參考）</p>
+    <p class="note">一篇2026年的機車雨衣推薦文把KARAKORAM側開秒穿一件式列為599元，同樣宣稱耐水壓10000mm。該文也把本品列為1,280元，跟官網與momo今天的1,380元不一樣。二手價格一律要自己回通路核對。</p>
+
+    <p style="margin-top:20px;font-size:15.5px;font-weight:500;color:var(--charcoal);">7-4　要回答的問題</p>
+    <p>同樣是側開、同樣能穿後背包，對手655到1,080元，而且有對手也宣稱10000mm耐水壓。這支商品貴30%到100%，理由是什麼？商品頁上找得到的差異化只有三個：杜邦鐵氟龍防水膜、三層防倒流結構、三種衣長（L、XL、2XL）。分析頁如果不回答這一題，等於沒有分析。</p>
+  </section>
+
+  <!-- 08 網路評價 -->
+  <section class="section" id="review">
+    <div class="section-head"><span class="idx num">08</span><h2>網路上的評價</h2></div>
+    <p>正反都要放。負評要照原意寫，不改寫成比較好聽的話，一頁只有好評的分析頁沒有人相信。</p>
+    <div class="review-grid">
+      <div class="quote positive">
+        <span class="label">正面</span>
+        <ul>
+          <li>Mobile01有實穿分享的討論串，重點是側開設計對有背包、戴安全帽的人方便，乾得快、收納體積小</li>
+          <li>部落格開箱提到2.0版加了背部3M加厚反光條、雙開領口、兩手透明手錶窗</li>
+          <li>多篇提到贈品秒穿雨鞋套是加分項</li>
+        </ul>
+      </div>
+      <div class="quote negative">
+        <span class="label">負面（這則最值得放進分析頁）</span>
+        <ul>
+          <li>有人在Threads給2.0版打70分，具體指出：肩部雙側拉鍊的設計在冬天穿多層衣服時會卡到喉嚨</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px;"><span class="src">來源：Mobile01討論串／部落格開箱／Threads評論　2026年9月12日</span></p>
+  </section>
+
+  <!-- 09 市場缺口 -->
+  <section class="section" id="gap">
+    <div class="section-head"><span class="idx num">09</span><h2>市場缺口與切入建議</h2></div>
+    <p>每一條都指出根據哪一段資料，沒有根據的建議不寫進來。</p>
+
+    <div class="gap-card">
+      <h3>缺口一　價格帶上面是空的，但理由也是空的</h3>
+      <span class="basis">根據第07段（7-1）</span>
+      <p>側開雨衣在PChome的價格帶是655到1,080元，本品1,380元，高於上緣28%。上面沒有對手，代表這個價位是品牌自己開的，不是市場競出來的。</p>
+      <p class="suggest">建議：分析頁與商品頁都要有一段「為什麼貴」，把杜邦膜、三層防倒流、三種衣長換算成使用者感受得到的差別，寫成「同樣淋30分鐘，差別在哪裡」，只寫規格名詞沒有用。</p>
+    </div>
+    <div class="gap-card">
+      <h3>缺口二　女性與嬌小體型幾乎沒有人做</h3>
+      <span class="basis">根據第07段（7-1）與第06段（6-1）</span>
+      <p>側開雨衣熱銷前20筆裡，品名含「女」的只有1筆，含「嬌小」的0筆；機車雨衣前20筆同樣是1筆與0筆。而外送員裡女性占22%。本品在官網與快電商只有L、XL、2XL三種長度，momo的同系列頁面則列出「嬌小型」。</p>
+      <p class="suggest">建議：先向品牌確認嬌小型是否仍在產，如果有就補上通路一致性；如果沒有，這是一個沒有人在做的尺寸缺口。</p>
+    </div>
+    <div class="gap-card">
+      <h3>缺口三　冬天的領口問題沒有人回答</h3>
+      <span class="basis">根據第06段（6-3）與第08段</span>
+      <p>公開評價裡最具體的負評是「冬天穿多層衣服時，肩部雙側拉鍊會卡到喉嚨」。搜尋結果裡沒有任何一個品牌在溝通「厚衣層怎麼穿」。</p>
+      <p class="suggest">建議：做一段冬季穿法的內容（影片或圖解），直接回答這個負評，這是把負評變成內容的最短路徑。</p>
+    </div>
+    <div class="gap-card">
+      <h3>缺口四　缺貨期長達半年以上，但沒有人在管等待期</h3>
+      <span class="basis">根據第05段</span>
+      <p>鈦灰要等到2027年1月、軍綠要等到2027年4月，新色用預購收單，9月30日起出貨。而7-2的對手隨時有貨，價格只有一半。</p>
+      <p class="suggest">建議：預購頁要把「為什麼值得等」寫清楚（限量、新色、規格差異），並且把出貨日寫在最上面。雨季是有時效的需求，等待期就是流失點。</p>
+    </div>
+    <div class="gap-card">
+      <h3>缺口五　沒有人回答「1,380和799差在哪」</h3>
+      <span class="basis">根據第07段（7-2、7-4）</span>
+      <p>對手有專利側開、有背包款、有三層防水、有反光條，宣稱看起來都很像。搜尋得到的內容多半是單品開箱，沒有同價位或跨價位的對照文章。</p>
+      <p class="suggest">建議：做一頁比較內容（不指名攻擊，只比公開規格與價格），這在搜尋與AI問答上都是空的位置。這頁本身就是這個缺口的答案。</p>
+    </div>
+    <div class="gap-card">
+      <h3>缺口六　檢測數據沒有被用起來</h3>
+      <span class="basis">根據第03段與第12段</span>
+      <p>品牌宣稱通過SGS耐水壓10000mmH₂O，但公開頁面沒有報告編號與日期。對手同樣宣稱10000mm，消費者無法分辨。</p>
+      <p class="suggest">建議：把報告編號、測試日期、測試項目公開，這是唯一能把「宣稱」變成「證據」的做法，也是溢價的支撐。</p>
+    </div>
+  </section>
+
+  <!-- 10 品牌與公司背景 -->
+  <section class="section" id="brand">
+    <div class="section-head"><span class="idx num">10</span><h2>品牌與公司背景</h2></div>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td>品牌</td><td>CHECK2CHECK，主力是機能雨衣與機能服飾</td></tr>
+          <tr><td>營業人名稱</td><td>建恆貿易有限公司</td></tr>
+          <tr><td>統一編號</td><td class="num">55776370</td></tr>
+          <tr><td>通路結構</td><td>自營官網、momo等第三方電商、快電商夥伴店</td></tr>
+          <tr><td>官網其他系列</td><td>冰磁系列、機能褲系列、登機系列、暖磁系列，另有實體門市與機能研究室頁面</td></tr>
+          <tr><td>客服時間</td><td>10:00到12:30、13:30到17:00，例假日與國定假日公休</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><span class="src">來源：check2check.com.tw頁尾／官網導覽列　2026年9月12日</span></p>
+    <figure style="margin-top:18px;">
+      <img class="hero-photo" src="a6.jpg" alt="極鋒雨衣穿著示意圖">
+      <figcaption>商品圖　來源：CHECK2CHECK官方CDN　2026年9月12日</figcaption>
+    </figure>
+  </section>
+
+  <!-- 11 宣稱與法規 -->
+  <section class="section" id="legal">
+    <div class="section-head"><span class="idx num">11</span><h2>宣稱與法規注意事項</h2></div>
+    <ol class="legal-list">
+      <li>「通過SGS耐水壓測試，10000mmH₂O」是官方宣稱。引用時照抄原句並註明是品牌宣稱，不要自己寫成「絕對防水」或「保證不會濕」。</li>
+      <li>防水不等於完全不進水。官方自己在商品頁列了8條注意事項，包含口袋放太重會導致領口進水、雨帽要確實戴上、擋水層要保持平整。把這幾條寫出來，比只寫優點更可信。</li>
+      <li>比較競品時只比公開規格與價格，不要寫「比某某牌好」這種沒有實測依據的話。</li>
+      <li>保固只有七天內新品瑕疵更換，不是一般人以為的長期保固，這點要寫清楚。</li>
+      <li>洗滌限制多：30度手洗、不可機洗、不可熨燙、不可日曬、不可用硬刷。這是很多客訴的來源。</li>
+    </ol>
+  </section>
+
+  <!-- 12 附錄 -->
+  <section class="section" id="appendix">
+    <div class="section-head"><span class="idx num">12</span><h2>附錄</h2></div>
+    <div class="appendix">
+      <h3>查不到的資料（不自行補）</h3>
+      <ul>
+        <li>銷量、退貨率、客訴率：公開資料查不到</li>
+        <li>SGS檢測報告的報告編號與日期：商品頁只寫通過測試，沒有附報告</li>
+        <li>各通路的實際評價星數與則數：momo頁面上沒有顯示</li>
+        <li>成本結構與毛利：查不到</li>
+        <li>鈦粉拼黑這個新色的銷售表現：預購中，還沒有數據</li>
+      </ul>
+      <h3>資料來源</h3>
+      <ul>
+        <li>品名、規格、賣點、注意事項、庫存、價格　快電商商品資料（商品id 8129，同系列1412），公開商品API</li>
+        <li>官網售價、原價、加購區、補貨時程、公司資料　check2check.com.tw／pitem／M00029175，瀏覽器讀取頁面文字</li>
+        <li>第三方通路價格　momoshop.com.tw商品頁，讀取頁面</li>
+        <li>競品與價格帶　內容網站推薦文（vocus），搜尋引擎</li>
+        <li>使用者評價　Mobile01討論串、部落格開箱、Threads評論，搜尋引擎</li>
+      </ul>
+      <p style="margin-top:14px;font-size:13px;color:var(--ink-soft);">所有數字都是2026年9月12日的快照。價格、庫存與活動隨時會變，引用本頁時請一併標註查詢日期。</p>
+    </div>
+  </section>
+
+  <footer>
+    素材與版面規則依據 raincoat-product.md 教學素材包整理　僅供AI課程教學示範使用
+  </footer>
+
+</div>
+</body>
+</html>
