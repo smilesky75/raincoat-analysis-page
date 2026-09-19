@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>聖誕報名表</title>
+<style>
+:root{
+  --bg:#FBF8F3;
+  --surface:#FFFFFF;
+  --ink:#26211C;
+  --ink-soft:#6B6259;
+  --pine:#1F4B3F;
+  --pine-dark:#16352C;
+  --berry:#A23B3B;
+  --gold:#C79A45;
+  --border:#E4DCCB;
+  --danger:#B3402F;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12201B;
+    --surface:#1B2A23;
+    --ink:#F3EFE6;
+    --ink-soft:#B9AF9E;
+    --pine:#5FA085;
+    --pine-dark:#3E7460;
+    --berry:#E08A8A;
+    --gold:#E4C079;
+    --border:#33443B;
+    --danger:#E08A8A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12201B;
+  --surface:#1B2A23;
+  --ink:#F3EFE6;
+  --ink-soft:#B9AF9E;
+  --pine:#5FA085;
+  --pine-dark:#3E7460;
+  --berry:#E08A8A;
+  --gold:#E4C079;
+  --border:#33443B;
+  --danger:#E08A8A;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  padding-inline:16px;
+  padding-block:32px;
+  display:flex;
+  justify-content:center;
+}
+
+.page{
+  width:100%;
+  max-width:480px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.header{
+  background:var(--pine);
+  color:#FBF8F3;
+  border-radius:16px;
+  padding:28px 24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.header svg.icon-tree{
+  width:36px;
+  height:36px;
+  color:var(--gold);
+}
+.header h1{
+  margin:0;
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:0.02em;
+}
+.header p{
+  margin:0;
+  font-size:13px;
+  color:#D8E4DD;
+}
+.snow{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0.35;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.info-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px 22px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.info-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  color:var(--ink);
+}
+.info-row svg{
+  width:17px;
+  height:17px;
+  color:var(--berry);
+  flex-shrink:0;
+}
+.info-row .info-label{
+  color:var(--ink-soft);
+  flex-shrink:0;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.field label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--ink-soft);
+}
+.field label svg{
+  width:16px;
+  height:16px;
+  color:var(--pine);
+  flex-shrink:0;
+}
+.field input{
+  font:inherit;
+  font-size:16px;
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--ink);
+  width:100%;
+}
+.field input:focus-visible{
+  outline:2px solid var(--pine);
+  outline-offset:1px;
+}
+.counters{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.field.error input{
+  border-color:var(--danger);
+}
+.field .errmsg{
+  font-size:12px;
+  color:var(--danger);
+  display:none;
+}
+.field.error .errmsg{
+  display:block;
+}
+
+button.submit{
+  font:inherit;
+  font-size:15px;
+  font-weight:700;
+  color:#FBF8F3;
+  background:var(--pine);
+  border:none;
+  border-radius:10px;
+  padding:13px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+button.submit:hover{background:var(--pine-dark);}
+button.submit:disabled{opacity:0.6;cursor:not-allowed;}
+button.submit svg{width:18px;height:18px;}
+
+.hint{
+  font-size:12px;
+  color:var(--ink-soft);
+  text-align:center;
+}
+
+.success{
+  display:none;
+  background:var(--surface);
+  border:1px solid var(--pine);
+  border-radius:16px;
+  padding:20px 24px;
+  gap:10px;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+.success.show{display:flex;}
+.success svg{width:32px;height:32px;color:var(--pine);}
+.success h2{margin:0;font-size:16px;}
+.success p{margin:0;font-size:13px;color:var(--ink-soft);}
+.success button{
+  margin-top:4px;
+  font:inherit;
+  font-size:13px;
+  font-weight:700;
+  color:var(--pine);
+  background:transparent;
+  border:1px solid var(--pine);
+  border-radius:8px;
+  padding:8px 16px;
+  cursor:pointer;
+}
+
+.overview{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.overview h2{
+  margin:0;
+  font-size:15px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.overview h2 svg{width:16px;height:16px;color:var(--berry);}
+
+.totals{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+.total-tile{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 8px;
+  text-align:center;
+}
+.total-tile .num{
+  font-size:20px;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+  color:var(--pine);
+}
+.total-tile .label{
+  font-size:11px;
+  color:var(--ink-soft);
+  margin-top:2px;
+}
+
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:280px;
+  overflow-y:auto;
+}
+.row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:13px;
+}
+.row .name{
+  font-weight:700;
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.row .counts{
+  display:flex;
+  gap:10px;
+  color:var(--ink-soft);
+  font-variant-numeric:tabular-nums;
+  flex-shrink:0;
+}
+.row .counts span{display:flex;align-items:center;gap:3px;}
+.row .counts svg{width:13px;height:13px;}
+
+.empty{
+  font-size:13px;
+  color:var(--ink-soft);
+  text-align:center;
+  padding:12px 0;
+}
+
+.unavailable{
+  background:var(--surface);
+  border:1px solid var(--danger);
+  border-radius:16px;
+  padding:20px 24px;
+  font-size:13px;
+  color:var(--danger);
+  text-align:center;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <svg class="snow" viewBox="0 0 480 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g stroke="#FBF8F3" stroke-width="1.5" stroke-linecap="round">
+        <path d="M40 20 L40 34 M33 27 L47 27 M35 22 L45 32 M45 22 L35 32"/>
+        <path d="M420 30 L420 44 M413 37 L427 37 M415 32 L425 42 M425 32 L415 42"/>
+        <path d="M200 12 L200 22 M195 17 L205 17"/>
+        <path d="M320 90 L320 100 M315 95 L325 95"/>
+        <path d="M90 100 L90 112 M84 106 L96 106 M86 102 L94 110 M94 102 L86 110"/>
+      </g>
+    </svg>
+    <svg class="icon-tree" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2 L7 10 L9.5 10 L5.5 16 L9 16 L12 22 L15 16 L18.5 16 L14.5 10 L17 10 Z"/>
+    </svg>
+    <h1>歡樂聖誕活動</h1>
+    <p>填寫姓名與人數，即完成報名</p>
+  </div>
+
+  <div class="info-card">
+    <div class="info-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      <span class="info-label">日期</span>
+      <span>2026年12月25日（五）</span>
+    </div>
+    <div class="info-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <span class="info-label">地點</span>
+      <span>湘子咖啡館</span>
+    </div>
+    <div class="info-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 10.5c1.4 2.8 3.6 5 6.4 6.4l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1v3.4c0 .6-.4 1-1 1C10.5 20.6 3.4 13.5 3.4 4.4c0-.6.4-1 1-1H7.8c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1L6.6 10.5Z"/></svg>
+      <span class="info-label">聯絡人</span>
+      <span>麵包 0988-020-364</span>
+    </div>
+  </div>
+
+  <form class="card" id="signup-form">
+    <div class="field" id="name-field">
+      <label for="name-input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        姓名
+      </label>
+      <input type="text" id="name-input" name="name" placeholder="請輸入姓名" autocomplete="name" required>
+      <div class="errmsg">請輸入姓名</div>
+    </div>
+
+    <div class="counters">
+      <div class="field" id="adults-field">
+        <label for="adults-input">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="18" cy="8" r="3"/><path d="M14.5 20c.2-3 2-5.3 5-5.3 2.5 0 4.5 1.6 5 4"/></svg>
+          大人人數
+        </label>
+        <input type="number" id="adults-input" name="adults" min="0" max="20" step="1" value="1" inputmode="numeric" required>
+        <div class="errmsg">請輸入 0 以上的整數</div>
+      </div>
+
+      <div class="field" id="kids-field">
+        <label for="kids-input">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3.2"/><path d="M12 9.2v3.8M9 13h6M9.5 13l-2 8M14.5 13l2 8"/></svg>
+          小孩人數
+        </label>
+        <input type="number" id="kids-input" name="kids" min="0" max="20" step="1" value="0" inputmode="numeric" required>
+        <div class="errmsg">請輸入 0 以上的整數</div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit" id="submit-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      送出報名
+    </button>
+    <p class="hint">送出後可在下方查看報名總覽</p>
+  </form>
+
+  <div class="success" id="success-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
+    <h2 id="success-text">報名成功！</h2>
+    <p>已加入下方報名總覽</p>
+    <button type="button" id="again-btn">再填一筆</button>
+  </div>
+
+  <div class="overview">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+      報名總覽
+    </h2>
+    <div class="totals">
+      <div class="total-tile"><div class="num" id="total-groups">0</div><div class="label">已報名組數</div></div>
+      <div class="total-tile"><div class="num" id="total-adults">0</div><div class="label">大人人數</div></div>
+      <div class="total-tile"><div class="num" id="total-kids">0</div><div class="label">小孩人數</div></div>
+    </div>
+    <div class="list" id="list-container">
+      <div class="empty">目前還沒有人報名</div>
+    </div>
+  </div>
+
+  <div class="unavailable" id="unavailable-panel" hidden>
+    此檢視模式無法送出報名，請聯絡主辦者。
+  </div>
+</div>
+
+<script>
+(function(){
+  var form = document.getElementById('signup-form');
+  var nameInput = document.getElementById('name-input');
+  var adultsInput = document.getElementById('adults-input');
+  var kidsInput = document.getElementById('kids-input');
+  var submitBtn = document.getElementById('submit-btn');
+  var successPanel = document.getElementById('success-panel');
+  var successText = document.getElementById('success-text');
+  var againBtn = document.getElementById('again-btn');
+  var unavailablePanel = document.getElementById('unavailable-panel');
+  var listContainer = document.getElementById('list-container');
+  var totalGroups = document.getElementById('total-groups');
+  var totalAdults = document.getElementById('total-adults');
+  var totalKids = document.getElementById('total-kids');
+
+  var USER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+  var CHILD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3.2"/><path d="M12 9.2v3.8M9 13h6M9.5 13l-2 8M14.5 13l2 8"/></svg>';
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function clearErrors(){
+    document.getElementById('name-field').classList.remove('error');
+    document.getElementById('adults-field').classList.remove('error');
+    document.getElementById('kids-field').classList.remove('error');
+  }
+
+  function validate(){
+    clearErrors();
+    var ok = true;
+    var name = nameInput.value.trim();
+    var adults = Number(adultsInput.value);
+    var kids = Number(kidsInput.value);
+    if(!name){
+      document.getElementById('name-field').classList.add('error');
+      ok = false;
+    }
+    if(!Number.isInteger(adults) || adults < 0){
+      document.getElementById('adults-field').classList.add('error');
+      ok = false;
+    }
+    if(!Number.isInteger(kids) || kids < 0){
+      document.getElementById('kids-field').classList.add('error');
+      ok = false;
+    }
+    return ok ? {name: name, adults: adults, kids: kids} : null;
+  }
+
+  function renderList(docs){
+    if(!docs.length){
+      listContainer.innerHTML = '<div class="empty">目前還沒有人報名</div>';
+      totalGroups.textContent = '0';
+      totalAdults.textContent = '0';
+      totalKids.textContent = '0';
+      return;
+    }
+    var sumAdults = 0, sumKids = 0;
+    var html = docs.map(function(d){
+      var data = d.data() || {};
+      var adults = Number(data.adults) || 0;
+      var kids = Number(data.kids) || 0;
+      sumAdults += adults;
+      sumKids += kids;
+      return '<div class="row">' +
+        '<span class="name">' + escapeHtml(data.name || '') + '</span>' +
+        '<span class="counts">' +
+          '<span>' + USER_ICON + adults + '</span>' +
+          '<span>' + CHILD_ICON + kids + '</span>' +
+        '</span>' +
+      '</div>';
+    }).join('');
+    listContainer.innerHTML = html;
+    totalGroups.textContent = String(docs.length);
+    totalAdults.textContent = String(sumAdults);
+    totalKids.textContent = String(sumKids);
+  }
+
+  async function init(){
+    var db = null;
+    try{
+      db = await window.claude.use('db');
+    }catch(e){
+      db = null;
+    }
+
+    if(!db){
+      unavailablePanel.hidden = false;
+      submitBtn.disabled = true;
+      return;
+    }
+
+    var col = db.collection('registrations');
+
+    col.orderBy('submittedAt', 'asc').limit(500).onSnapshot(function(snap){
+      renderList(snap.docs);
+    }, function(err){
+      listContainer.innerHTML = '<div class="empty">目前無法載入報名總覽</div>';
+    });
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var v = validate();
+      if(!v) return;
+      submitBtn.disabled = true;
+      try{
+        await col.add({
+          name: v.name,
+          adults: v.adults,
+          kids: v.kids,
+          submittedAt: new Date().toISOString()
+        });
+        successText.textContent = v.name + '，報名成功！';
+        successPanel.classList.add('show');
+        form.reset();
+        adultsInput.value = '1';
+        kidsInput.value = '0';
+        form.hidden = true;
+      }catch(err){
+        clearErrors();
+      }finally{
+        submitBtn.disabled = false;
+      }
+    });
+
+    againBtn.addEventListener('click', function(){
+      successPanel.classList.remove('show');
+      form.hidden = false;
+      nameInput.focus();
+    });
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>
